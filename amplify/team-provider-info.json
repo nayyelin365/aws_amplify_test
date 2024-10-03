@@ -1,0 +1,15 @@
+{
+  "staging": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-hlap-staging-d9cbd-authRole",
+      "UnauthRoleArn": "arn:aws:iam::054037096712:role/amplify-hlap-staging-d9cbd-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::054037096712:role/amplify-hlap-staging-d9cbd-authRole",
+      "Region": "ap-southeast-2",
+      "DeploymentBucketName": "amplify-hlap-staging-d9cbd-deployment",
+      "UnauthRoleName": "amplify-hlap-staging-d9cbd-unauthRole",
+      "StackName": "amplify-hlap-staging-d9cbd",
+      "StackId": "arn:aws:cloudformation:ap-southeast-2:054037096712:stack/amplify-hlap-staging-d9cbd/35dabfa0-80e1-11ef-ae08-02c268fa4eff",
+      "AmplifyAppId": "dicp9qo9i8n6b"
+    }
+  }
+}
