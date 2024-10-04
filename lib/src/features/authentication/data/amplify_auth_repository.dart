@@ -11,17 +11,18 @@ class AmplifyAuthRepository {
   Stream<List<AuthUserAttribute>?> authStateChanges() => _authState.stream;
   List<AuthUserAttribute>? get currentUser => _authState.value;
 
-  Future<List<AuthUserAttribute>?> fetchCurrentUser() async {
+  Future<List<AuthUserAttribute>> fetchCurrentUser() async {
     try {
       var currentUser = await Amplify.Auth.fetchUserAttributes();
       return currentUser;
     } on AuthException catch (e) {
       debugPrint(e.message);
-      throw Exception(e.message);
+      return Future.value([]);
+      // throw Exception(e.message);
     }
   }
 
-  Future<bool> isSignedIn() async {
+  Future<bool> isSignedInStatus() async {
     try {
       var currentUser = await Amplify.Auth.fetchUserAttributes();
       _authState.value = currentUser;
@@ -103,7 +104,7 @@ Future<Map<String, String>> currentUserInfo(CurrentUserInfoRef ref) async {
   final Map<String, String> _userAttributes = {};
 
   final userAttributes = await amplifyRepository.fetchCurrentUser();
-  for (var attribute in userAttributes ?? []) {
+  for (var attribute in userAttributes) {
     _userAttributes[attribute.userAttributeKey.toString()] = attribute.value;
   }
   return _userAttributes;
@@ -113,4 +114,11 @@ Future<Map<String, String>> currentUserInfo(CurrentUserInfoRef ref) async {
 Stream<List<AuthUserAttribute>?> authStateChanges(AuthStateChangesRef ref) {
   final authRepository = ref.watch(amplifyAuthProvider);
   return authRepository.authStateChanges();
+}
+
+@Riverpod(keepAlive: true)
+Future<bool> isSignedInStatus(IsSignedInStatusRef ref) {
+  final amplifyRepository = ref.watch(amplifyAuthProvider);
+  var isSignedIn = amplifyRepository.isSignedInStatus();
+  return isSignedIn;
 }

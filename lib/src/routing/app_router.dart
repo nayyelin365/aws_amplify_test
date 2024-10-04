@@ -24,19 +24,19 @@ enum AppRoute {
 @Riverpod(keepAlive: true)
 GoRouter goRouter(GoRouterRef ref) {
   final amplifyAuthRepository = ref.watch(amplifyAuthProvider);
-  ref.watch(amplifyAuthProvider).isSignedIn();
+  final authState = ref.watch(isSignedInStatusProvider);
+
   return GoRouter(
     initialLocation: '/',
     debugLogDiagnostics: true,
     redirect: (context, state) {
       final path = state.uri.path;
+      final isLoggedIn = authState.value != null;
 
-      var isLoggedIn = amplifyAuthRepository.currentUser != null;
-
-      debugPrint('isLoggedIn: $isLoggedIn');
       debugPrint('state.uri.path: ${state.fullPath}');
+      debugPrint('authState: ${isLoggedIn}');
 
-      // If not logged in, redirect to sign-in page
+      //If not logged in, redirect to sign-in page
       if (!isLoggedIn &&
           path != '/signIn' &&
           path != '/signUp' &&
@@ -45,7 +45,7 @@ GoRouter goRouter(GoRouterRef ref) {
       }
 
       // If logged in, go to home
-      if (isLoggedIn && path == '/signIn') {
+      if (isLoggedIn && path == '/signIn' && path == '/') {
         return '/home';
       }
 

@@ -52,5 +52,20 @@ final authStateChangesProvider =
 );
 
 typedef AuthStateChangesRef = StreamProviderRef<List<AuthUserAttribute>?>;
+String _$isSignedInStatusHash() => r'a33c73d3ebee5227468e99b52e54b9503dd72268';
+
+/// See also [isSignedInStatus].
+@ProviderFor(isSignedInStatus)
+final isSignedInStatusProvider = FutureProvider<bool>.internal(
+  isSignedInStatus,
+  name: r'isSignedInStatusProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$isSignedInStatusHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef IsSignedInStatusRef = FutureProviderRef<bool>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

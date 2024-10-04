@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_amplify_app/src/common_widgets/custom_text_button.dart';
 import 'package:my_amplify_app/src/common_widgets/primary_button.dart';
-import 'package:my_amplify_app/src/common_widgets/responsive_center.dart';
 import 'package:my_amplify_app/src/common_widgets/responsive_scrollable_card.dart';
 import 'package:my_amplify_app/src/constants/app_sizes.dart';
 import 'package:my_amplify_app/src/features/authentication/presentation/controller/auth_controller.dart';
