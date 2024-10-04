@@ -1,50 +1,86 @@
-import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_amplify_app/src/features/authentication/data/amplify_auth_repository.dart';
 import 'package:my_amplify_app/src/features/authentication/presentation/sign_in_screen.dart';
+import 'package:my_amplify_app/src/features/authentication/presentation/sign_up_confirm_screen.dart';
+import 'package:my_amplify_app/src/features/authentication/presentation/sign_up_screen.dart';
 import 'package:my_amplify_app/src/features/home/home_screen.dart';
 import 'package:my_amplify_app/src/features/profile/profile_screen.dart';
+import 'package:my_amplify_app/src/features/splash/splash_screen.dart';
+import 'package:my_amplify_app/src/routing/go_router_refresh_stream.dart';
+import 'package:my_amplify_app/src/routing/not_found_screen.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+part 'app_router.g.dart';
 
 enum AppRoute {
+  splash,
   signIn,
+  signUp,
+  signUpConfirm,
   home,
   profile,
 }
 
-final currentUserProvider = FutureProvider<AuthUser?>((ref) async {
-  try {
-    return await Amplify.Auth.getCurrentUser();
-  } on AuthException catch (e) {
-    debugPrint('Error getting current user: ${e.message}');
-    return null; // No user is authenticated
-  }
-});
-
-final goRouterProvider = Provider<GoRouter>((ref) {
-  final amplifyAuth = ref.watch(currentUserProvider);
+@Riverpod(keepAlive: true)
+GoRouter goRouter(GoRouterRef ref) {
+  final amplifyAuthRepository = ref.watch(amplifyAuthProvider);
+  ref.watch(amplifyAuthProvider).isSignedIn();
   return GoRouter(
-    initialLocation: '/sign-in',
+    initialLocation: '/',
     debugLogDiagnostics: true,
     redirect: (context, state) {
-      final isLoggedIn = amplifyAuth.asData?.value != null;
-      if (isLoggedIn) {
-        if (state.uri.path == '/sign-in') {
-          return '/home';
-        }
-      } else {
-        if (state.uri.path.startsWith('/home')) {
-          return '/sign-in';
-        }
+      final path = state.uri.path;
+
+      var isLoggedIn = amplifyAuthRepository.currentUser != null;
+
+      debugPrint('isLoggedIn: $isLoggedIn');
+      debugPrint('state.uri.path: ${state.fullPath}');
+
+      // If not logged in, redirect to sign-in page
+      if (!isLoggedIn &&
+          path != '/signIn' &&
+          path != '/signUp' &&
+          state.fullPath != '/signUp/signUpConfirm/:email') {
+        return '/signIn';
       }
+
+      // If logged in, go to home
+      if (isLoggedIn && path == '/signIn') {
+        return '/home';
+      }
+
       return null;
     },
+    refreshListenable:
+        GoRouterRefreshStream(amplifyAuthRepository.authStateChanges()),
     routes: [
       GoRoute(
-        path: '/sign-in',
+        path: '/',
+        name: AppRoute.splash.name,
+        builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: '/signIn',
         name: AppRoute.signIn.name,
         builder: (context, state) => const SignInScreen(),
       ),
+      GoRoute(
+          path: '/signUp',
+          name: AppRoute.signUp.name,
+          builder: (context, state) => const SignUpScreen(),
+          routes: [
+            GoRoute(
+              path: 'signUpConfirm/:email',
+              name: AppRoute.signUpConfirm.name,
+              builder: (context, state) {
+                String? email = state.pathParameters['email'];
+
+                return SignUpConfirmScreen(
+                  email: email ?? '',
+                );
+              },
+            ),
+          ]),
       GoRoute(
         path: '/home',
         name: AppRoute.home.name,
@@ -58,5 +94,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
     ],
+    errorBuilder: (context, state) => const NotFoundScreen(),
   );
-});
+}

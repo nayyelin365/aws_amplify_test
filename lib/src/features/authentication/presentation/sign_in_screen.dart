@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:my_amplify_app/src/common_widgets/custom_text_button.dart';
+import 'package:my_amplify_app/src/common_widgets/primary_button.dart';
+import 'package:my_amplify_app/src/constants/app_sizes.dart';
 import 'package:my_amplify_app/src/features/authentication/presentation/controller/auth_controller.dart';
 import 'package:my_amplify_app/src/routing/app_router.dart';
+import 'package:my_amplify_app/src/utils/async_value_ui.dart';
 
 class SignInScreen extends ConsumerStatefulWidget {
   const SignInScreen({super.key});
@@ -24,6 +28,11 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AsyncValue>(
+      authControllerProvider,
+      (_, state) => state.showAlertDialogOnError(context),
+    );
+    final state = ref.watch(authControllerProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Login')),
       body: Padding(
@@ -32,7 +41,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           children: [
             TextField(
               controller: _usernameController,
-              decoration: const InputDecoration(labelText: 'Username'),
+              decoration: const InputDecoration(labelText: 'Email'),
             ),
             TextField(
               controller: _passwordController,
@@ -40,21 +49,27 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               decoration: const InputDecoration(labelText: 'Password'),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                final controller = ref.read(authControllerProvider.notifier);
-                final success = await controller.signIn(
-                    email: _usernameController.text,
-                    password: _passwordController.text);
-                if (success) {
-                  context.goNamed(AppRoute.home.name);
-                }
-              },
-              child: const Text('SignIn'),
+            PrimaryButton(
+              text: 'SignIn',
+              isLoading: state.isLoading,
+              onPressed: state.isLoading ? null : () => _submit(),
+            ),
+            gapH8,
+            CustomTextButton(
+              text: 'SignUp',
+              onPressed: state.isLoading
+                  ? null
+                  : () => context.pushNamed(AppRoute.signUp.name),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _submit() async {
+    final controller = ref.read(authControllerProvider.notifier);
+    await controller.signIn(
+        email: _usernameController.text, password: _passwordController.text);
   }
 }

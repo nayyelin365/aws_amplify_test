@@ -18,6 +18,26 @@ class AuthController extends _$AuthController {
     return state.hasError == false;
   }
 
+  Future<bool> signUp(
+      {required String username,
+      required String email,
+      required String password}) async {
+    state = const AsyncLoading();
+    final amplifyProvider = ref.read(amplifyAuthProvider);
+    state = await AsyncValue.guard(
+        () => amplifyProvider.signUp(username, email, password));
+    return state.hasError == false;
+  }
+
+  Future<bool> signUpConfirm(
+      {required String username, required String code}) async {
+    state = const AsyncLoading();
+    final amplifyProvider = ref.read(amplifyAuthProvider);
+    state = await AsyncValue.guard(
+        () => amplifyProvider.signUpConfirm(username, code));
+    return state.hasError == false;
+  }
+
   Future<bool> signOut() async {
     state = const AsyncLoading();
     final amplifyProvider = ref.read(amplifyAuthProvider);

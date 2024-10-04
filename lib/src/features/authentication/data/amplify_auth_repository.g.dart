@@ -36,5 +36,21 @@ final currentUserInfoProvider =
 );
 
 typedef CurrentUserInfoRef = AutoDisposeFutureProviderRef<Map<String, String>>;
+String _$authStateChangesHash() => r'37ca2b8bba1b4ff1635751b856c85c07d3d5e30d';
+
+/// See also [authStateChanges].
+@ProviderFor(authStateChanges)
+final authStateChangesProvider =
+    StreamProvider<List<AuthUserAttribute>?>.internal(
+  authStateChanges,
+  name: r'authStateChangesProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$authStateChangesHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef AuthStateChangesRef = StreamProviderRef<List<AuthUserAttribute>?>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
