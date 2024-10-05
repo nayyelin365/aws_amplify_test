@@ -46,7 +46,8 @@ GoRouter goRouter(GoRouterRef ref) {
 
       if (authStateStatus == null &&
           path != '/signUp' &&
-          state.fullPath != '/signUp/signUpConfirm/:email') {
+          state.fullPath != '/signUp/signUpConfirm/:email' &&
+          path != '/home') {
         debugPrint('@@$path');
         return '/signIn';
       } else {

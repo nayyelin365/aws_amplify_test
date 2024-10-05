@@ -18,7 +18,7 @@ class AmplifyAuthRepository {
       debugPrint('@@@@@authStatus:in repo${currentUser.isNotEmpty.toString()}');
       return currentUser;
     } on AuthException catch (e) {
-      debugPrint(e.message);
+      debugPrint('${e.message} ####');
       return Future.value([]);
       // throw Exception(e.message);
     }
@@ -44,10 +44,14 @@ class AmplifyAuthRepository {
       if (result.isSignedIn) {
         _authState.value = await fetchCurrentUser();
       }
+      if (result.nextStep.signInStep == AuthSignInStep.confirmSignUp) {}
+      debugPrint('${result.isSignedIn} ${result.nextStep.toJson()} ####');
+
       return result.isSignedIn;
     } on AuthException catch (e) {
       // Handle signIn error
-      debugPrint(e.message);
+      debugPrint('${e.message} ####');
+
       throw Exception(e.message);
     }
   }
@@ -70,7 +74,7 @@ class AmplifyAuthRepository {
         signIn(email, password);
       }
     } on AuthException catch (e) {
-      debugPrint(e.message);
+      debugPrint('${e.message} ####');
       throw Exception(e.message);
     }
   }
