@@ -7,8 +7,8 @@ class MyApp extends ConsumerWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(amplifyAuthProvider).fetchCurrentUser();
     final goRouter = ref.watch(goRouterProvider);
+    ref.watch(amplifyAuthProvider).fetchCurrentUser();
     return MaterialApp.router(
       routerConfig: goRouter,
       debugShowCheckedModeBanner: false,

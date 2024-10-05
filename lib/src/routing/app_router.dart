@@ -21,32 +21,38 @@ enum AppRoute {
   profile,
 }
 
+final navigatorKey = GlobalKey<NavigatorState>();
+
 @Riverpod(keepAlive: true)
 GoRouter goRouter(GoRouterRef ref) {
   final amplifyAuthRepository = ref.watch(amplifyAuthProvider);
-  final authState = ref.watch(isSignedInStatusProvider);
+  final isSignInStatus = ref.watch(isSignedInStatusProvider);
 
   return GoRouter(
+    navigatorKey: navigatorKey,
     initialLocation: '/',
     debugLogDiagnostics: true,
     redirect: (context, state) {
       final path = state.uri.path;
-      final isLoggedIn = authState.value != null;
+      final authStateStatus = amplifyAuthRepository.currentUser;
 
       debugPrint('state.uri.path: ${state.fullPath}');
-      debugPrint('authState: ${isLoggedIn}');
+      debugPrint(
+          'authStatus: router ${amplifyAuthRepository.currentUser == null}}');
 
-      //If not logged in, redirect to sign-in page
-      if (!isLoggedIn &&
-          path != '/signIn' &&
-          path != '/signUp' &&
-          state.fullPath != '/signUp/signUpConfirm/:email') {
-        return '/signIn';
+      if (isSignInStatus.isLoading) {
+        return '/';
       }
 
-      // If logged in, go to home
-      if (isLoggedIn && path == '/signIn' && path == '/') {
-        return '/home';
+      if (authStateStatus == null &&
+          path != '/signUp' &&
+          state.fullPath != '/signUp/signUpConfirm/:email') {
+        debugPrint('@@$path');
+        return '/signIn';
+      } else {
+        if (path == '/signIn' || path == '/') {
+          return '/home';
+        }
       }
 
       return null;

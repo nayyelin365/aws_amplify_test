@@ -14,6 +14,8 @@ class AmplifyAuthRepository {
   Future<List<AuthUserAttribute>> fetchCurrentUser() async {
     try {
       var currentUser = await Amplify.Auth.fetchUserAttributes();
+      _authState.value = currentUser;
+      debugPrint('@@@@@authStatus:in repo${currentUser.isNotEmpty.toString()}');
       return currentUser;
     } on AuthException catch (e) {
       debugPrint(e.message);
@@ -26,8 +28,10 @@ class AmplifyAuthRepository {
     try {
       var currentUser = await Amplify.Auth.fetchUserAttributes();
       _authState.value = currentUser;
+
       return currentUser.isNotEmpty;
     } on AuthException catch (e) {
+      debugPrint('authStatus:in rep false');
       debugPrint(e.message);
       return false;
     }
@@ -54,14 +58,17 @@ class AmplifyAuthRepository {
     String password,
   ) async {
     try {
-      await Amplify.Auth.signUp(
+      final result = await Amplify.Auth.signUp(
         username: username,
         password: password,
         options: SignUpOptions(userAttributes: {
           AuthUserAttributeKey.email: email,
+          AuthUserAttributeKey.name: username
         }),
       );
-      signIn(email, password);
+      if (result.isSignUpComplete) {
+        signIn(email, password);
+      }
     } on AuthException catch (e) {
       debugPrint(e.message);
       throw Exception(e.message);
@@ -85,6 +92,8 @@ class AmplifyAuthRepository {
   Future<void> signOut() async {
     try {
       await Amplify.Auth.signOut();
+      await fetchCurrentUser();
+      await isSignedInStatus();
       _authState.value = null;
     } on AuthException catch (e) {
       debugPrint(e.message);
@@ -117,8 +126,15 @@ Stream<List<AuthUserAttribute>?> authStateChanges(AuthStateChangesRef ref) {
 }
 
 @Riverpod(keepAlive: true)
-Future<bool> isSignedInStatus(IsSignedInStatusRef ref) {
+Future<bool> isSignedInStatus(IsSignedInStatusRef ref) async {
   final amplifyRepository = ref.watch(amplifyAuthProvider);
-  var isSignedIn = amplifyRepository.isSignedInStatus();
+  var isSignedIn = await amplifyRepository.isSignedInStatus();
   return isSignedIn;
+}
+
+@Riverpod(keepAlive: true)
+Future<List<AuthUserAttribute>> fetchUserInfo(FetchUserInfoRef ref) async {
+  final amplifyRepository = ref.watch(amplifyAuthProvider);
+  var userInfo = await amplifyRepository.fetchCurrentUser();
+  return userInfo;
 }

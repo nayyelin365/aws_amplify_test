@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_amplify_app/amplifyconfiguration.dart';
 import 'package:my_amplify_app/src/app.dart';
-import 'package:my_amplify_app/src/features/authentication/data/amplify_auth_repository.dart';
 // ignore:depend_on_referenced_packages
 import 'package:flutter_web_plugins/url_strategy.dart';
 
@@ -13,11 +12,6 @@ Future<void> main() async {
     WidgetsFlutterBinding.ensureInitialized();
     usePathUrlStrategy();
     await _configureAmplify();
-    final container = ProviderContainer();
-    await container
-        .read(amplifyAuthProvider)
-        .fetchCurrentUser(); // Wait for user data to be fetched
-
     runApp(const ProviderScope(child: MyApp()));
   } on AmplifyException catch (e) {
     runApp(Text("Error configuring Amplify: ${e.message}"));
