@@ -32,6 +32,7 @@ class AmplifyAuthRepository {
       return currentUser.isNotEmpty;
     } on AuthException catch (e) {
       debugPrint('authStatus:in rep false');
+
       debugPrint(e.message);
       return false;
     }
@@ -44,7 +45,10 @@ class AmplifyAuthRepository {
       if (result.isSignedIn) {
         _authState.value = await fetchCurrentUser();
       }
-      if (result.nextStep.signInStep == AuthSignInStep.confirmSignUp) {}
+      if (result.nextStep.signInStep ==
+          AuthSignInStep.confirmSignInWithNewPassword) {
+        debugPrint('#### signIn: go To password screen}');
+      }
       debugPrint('${result.isSignedIn} ${result.nextStep.toJson()} ####');
 
       return result.isSignedIn;
