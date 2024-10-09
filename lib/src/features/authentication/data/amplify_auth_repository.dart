@@ -1,5 +1,6 @@
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:my_amplify_app/src/exception/app_exception.dart';
 import 'package:my_amplify_app/src/utils/in_memory_store.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -21,6 +22,16 @@ class AmplifyAuthRepository {
       debugPrint('${e.message} ####');
       return Future.value([]);
       // throw Exception(e.message);
+    }
+  }
+
+  Future<bool> fetchAuthSession() async {
+    try {
+      final session = await Amplify.Auth.fetchAuthSession();
+      return session.isSignedIn; // 로그인 상태 반환
+    } on AuthException catch (e) {
+      safePrint('Error retrieving auth session: ${e.message}');
+      return false; // 에러 시 로그인되지 않은 상태로 처리
     }
   }
 
@@ -47,9 +58,14 @@ class AmplifyAuthRepository {
       }
       if (result.nextStep.signInStep ==
           AuthSignInStep.confirmSignInWithNewPassword) {
-        debugPrint('#### signIn: go To password screen}');
+        debugPrint(
+            '${result.isSignedIn} ${result.nextStep.toJson()} confirmSignInWithNewPassword ########');
+
+        throw ConfirmSignInWithNewPasswordException(
+            message: 'change password', code: '403');
       }
-      debugPrint('${result.isSignedIn} ${result.nextStep.toJson()} ####');
+      debugPrint(
+          '${result.isSignedIn} ${result.nextStep.toJson()} confirmSignInWithNewPassword ########');
 
       return result.isSignedIn;
     } on AuthException catch (e) {
@@ -79,6 +95,26 @@ class AmplifyAuthRepository {
       }
     } on AuthException catch (e) {
       debugPrint('${e.message} ####');
+      throw Exception(e.message);
+    }
+  }
+
+  Future<bool> confirmNewPassword(String newPassword) async {
+    try {
+      // Complete the sign-in by providing the new password
+      final result =
+          await Amplify.Auth.confirmSignIn(confirmationValue: newPassword);
+
+      // If signed in successfully after changing password
+      if (result.isSignedIn) {
+        _authState.value = await fetchCurrentUser();
+        debugPrint('Password changed successfully: ${result.isSignedIn}');
+      }
+
+      return result.isSignedIn;
+    } on AuthException catch (e) {
+      // Handle error in confirming new password
+      debugPrint('Error confirming new password: ${e.message}');
       throw Exception(e.message);
     }
   }

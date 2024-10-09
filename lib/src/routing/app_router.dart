@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:my_amplify_app/src/features/authentication/data/amplify_auth_repository.dart';
+import 'package:my_amplify_app/src/features/authentication/presentation/change_password.dart';
 import 'package:my_amplify_app/src/features/authentication/presentation/sign_in_screen.dart';
 import 'package:my_amplify_app/src/features/authentication/presentation/sign_up_confirm_screen.dart';
 import 'package:my_amplify_app/src/features/authentication/presentation/sign_up_screen.dart';
@@ -19,6 +20,7 @@ enum AppRoute {
   signUpConfirm,
   home,
   profile,
+  changePassword,
 }
 
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -26,35 +28,53 @@ final navigatorKey = GlobalKey<NavigatorState>();
 @Riverpod(keepAlive: true)
 GoRouter goRouter(GoRouterRef ref) {
   final amplifyAuthRepository = ref.watch(amplifyAuthProvider);
-  final isSignInStatus = ref.watch(isSignedInStatusProvider);
+  // final isSignInStatus = ref.watch(isSignedInStatusProvider);
 
   return GoRouter(
     navigatorKey: navigatorKey,
-    initialLocation: '/',
+    initialLocation: '/signIn',
     debugLogDiagnostics: true,
-    redirect: (context, state) {
-      final path = state.uri.path;
-      final authStateStatus = amplifyAuthRepository.currentUser;
+    redirect: (context, state) async {
+      final isLoggedIn = await amplifyAuthRepository.fetchAuthSession();
 
-      debugPrint('state.uri.path: ${state.fullPath}');
-      debugPrint(
-          'authStatus: router ${amplifyAuthRepository.currentUser == null}}');
+      final isLoggingIn = state.matchedLocation == '/signIn' ||
+          state.matchedLocation == '/chnage_password';
 
-      if (isSignInStatus.isLoading) {
-        return '/';
-      }
+      debugPrint('state.matchedLocation: ${state.matchedLocation}');
+      debugPrint('isLoggedIn: $isLoggedIn, isLoggingIn: $isLoggingIn');
 
-      if (authStateStatus == null &&
-          path != '/signUp' &&
-          state.fullPath != '/signUp/signUpConfirm/:email' &&
-          path != '/home') {
-        debugPrint('@@$path');
+      // 로그인 안되어 있으면 로그인 페이지로 리다이렉트
+      if (!isLoggedIn && !isLoggingIn) {
         return '/signIn';
-      } else {
-        if (path == '/signIn' || path == '/') {
-          return '/home';
-        }
       }
+
+      // 로그인 상태에서 로그인 페이지에 접근하려고 하면 홈으로 리다이렉트
+      if (isLoggedIn && isLoggingIn) {
+        return '/home';
+      }
+      return null;
+      // final path = state.uri.path;
+      // final authStateStatus = amplifyAuthRepository.currentUser;
+
+      // debugPrint('state.uri.path: ${state.fullPath}');
+      // debugPrint(
+      //     'authStatus: router ${amplifyAuthRepository.currentUser == null}}');
+
+      // if (isSignInStatus.isLoading) {
+      //   return '/';
+      // }
+
+      // if (authStateStatus == null &&
+      //     path != '/signUp' &&
+      //     state.fullPath != '/signUp/signUpConfirm/:email' &&
+      //     path != '/home') {
+      //   debugPrint('@@$path');
+      //   return '/signIn';
+      // } else {
+      //   if (path == '/signIn' || path == '/') {
+      //     return '/home';
+      //   }
+      // }
 
       return null;
     },
@@ -70,6 +90,11 @@ GoRouter goRouter(GoRouterRef ref) {
         path: '/signIn',
         name: AppRoute.signIn.name,
         builder: (context, state) => const SignInScreen(),
+      ),
+      GoRoute(
+        path: '/chnage_password',
+        name: AppRoute.changePassword.name,
+        builder: (context, state) => const ChangePasswordScreen(),
       ),
       GoRoute(
           path: '/signUp',

@@ -5,53 +5,33 @@ import 'package:my_amplify_app/src/common_widgets/custom_text_button.dart';
 import 'package:my_amplify_app/src/common_widgets/primary_button.dart';
 import 'package:my_amplify_app/src/common_widgets/responsive_scrollable_card.dart';
 import 'package:my_amplify_app/src/constants/app_sizes.dart';
-import 'package:my_amplify_app/src/exception/app_exception.dart';
 import 'package:my_amplify_app/src/features/authentication/presentation/controller/auth_controller.dart';
 import 'package:my_amplify_app/src/routing/app_router.dart';
 import 'package:my_amplify_app/src/utils/async_value_ui.dart';
 
-class SignInScreen extends ConsumerStatefulWidget {
-  const SignInScreen({super.key});
+class ChangePasswordScreen extends ConsumerStatefulWidget {
+  const ChangePasswordScreen({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _SignInScreenState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _ChangePasswordScreenState();
 }
 
-class _SignInScreenState extends ConsumerState<SignInScreen> {
-  final TextEditingController _usernameController = TextEditingController();
+class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
   final TextEditingController _passwordController = TextEditingController();
 
   @override
   void dispose() {
     super.dispose();
-    _usernameController.dispose();
     _passwordController.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AsyncValue<void>>(authControllerProvider, (previous, next) {
-      next.when(
-        data: (_) {
-          context.go('/'); //로그인 성공시 화면 이동
-        },
-        loading: () {
-          // 로딩 상태 처리 (필요한 경우)
-        },
-        error: (error, stack) {
-          if (error is ConfirmSignInWithNewPasswordException) {
-            context.goNamed(AppRoute.changePassword.name);
-          }
-
-          debugPrint(error.toString());
-
-          //에러 처리
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('로그인 실패: $error')),
-          );
-        },
-      );
-    });
+    ref.listen<AsyncValue>(
+      authControllerProvider,
+      (_, state) => state.showAlertDialogOnError(context),
+    );
     final state = ref.watch(authControllerProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Login')),
@@ -60,10 +40,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              TextField(
-                controller: _usernameController,
-                decoration: const InputDecoration(labelText: 'Email'),
-              ),
               TextField(
                 controller: _passwordController,
                 obscureText: true,
@@ -77,7 +53,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               ),
               gapH8,
               CustomTextButton(
-                text: 'SignUp',
+                text: 'Change Password',
                 onPressed: state.isLoading
                     ? null
                     : () => context.pushNamed(AppRoute.signUp.name),
@@ -91,7 +67,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
   Future<void> _submit() async {
     final controller = ref.read(authControllerProvider.notifier);
-    await controller.signIn(
-        email: _usernameController.text, password: _passwordController.text);
+    await controller.changePassword(password: _passwordController.text);
   }
 }
