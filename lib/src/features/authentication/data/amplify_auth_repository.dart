@@ -25,7 +25,7 @@ class AmplifyAuthRepository {
     }
   }
 
-  Future<bool> fetchAuthSession() async {
+  Future<bool> fetchAuthSession() async { // you can use fetchAuthSession to make good speed for login, add condition this one in goruter file, not fetchCurrentuser
     try {
       final session = await Amplify.Auth.fetchAuthSession();
       return session.isSignedIn; // 로그인 상태 반환
